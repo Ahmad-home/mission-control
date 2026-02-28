@@ -29,7 +29,7 @@ function pageToTask(page: any) {
     id: getText(p['TaskId']) || page.id,
     title: getTitle(p['Title']),
     description: getText(p['Description']),
-    assignee: getSelect(p['Assignee']),
+    assignee: getSelect(p['Assignee']) === 'dana' ? 'Dana' : (getSelect(p['Assignee']) || 'Ahmad'),
     priority: getSelect(p['Priority']),
     status: getSelect(p['Status']),
     tags: getMultiSelect(p['Tags']),
@@ -50,7 +50,7 @@ function taskToProperties(task: any) {
     "Tags": { multi_select: (task.tags || []).map((t: string) => ({ name: t })) },
   }
 
-  const assignee = task.assignee === 'Dana' ? 'dana' : (task.assignee || 'Ahmad')
+  const assignee = task.assignee === 'Dana' ? 'Dana' : (task.assignee || 'Ahmad')
   if (['Ahmad', 'dana'].includes(assignee)) {
     props["Assignee"] = { select: { name: assignee } }
   }
