@@ -1,0 +1,22 @@
+2026-02-28T03:40:30.445Z: 📊 Dashboard Update:
+📝 ملاحظة جديدة من أحمد على "تطوير Email KPI System — أتمتة شهرية كاملة":
+السيستم الحالي: 5 workflows في n8n تعمل كل خميس الساعة 11:00-11:30 مساءً + تقرير شهري يوم 28. المنطق: Gmail (cs@audiom.sa) → تصنيف بـ AI → Airtable → حساب response time → تقرير HTML → إرسال لعزيز.
+
+المشاكل الحالية المكتشفة:
+1. Gmail query ما يجيب Outbound (from:cs@audiom.sa مفقود)
+2. filterByFormula في Search records خطأ syntax
+3. filterByFormula فاضي في Search Inbound/Outbound nodes
+4. direction مش محفوظ عند Create record
+5. field name mismatch: Aggregation Engine يخرج met_by_time_* لكن Format/Upsert يقرأ sla_*
+6. month يُحسب من أول إيميل بدل 
+7. gpt-5-mini موديل غير موجود
+8. || operators ضاعت في كود nodes
+9. responders_focus فيها newlines في الإيميلات
+10. ما في date filter على Gmail → يجيب كل الإيميلات
+
+الهدف من التطوير:
+- الـ workflow يشتغل شهرياً بدون أي تدخل يدوي
+- يحسب KPIs صح: response rate, avg/median response time, SLA compliance (24h) لـ fouz@audiom.sa و salman@audiom.sa
+- يرسل تقرير HTML لعزيز كل أول الشهر
+- الـ direction (inbound/outbound) يُحدد من from_email بالنسبة لـ cs@audiom.sa
+- البيانات تُخزن في Airtable: Email Response KPI (records) + Email KPI Summary (monthly)
