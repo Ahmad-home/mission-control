@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { SEED_TASKS, SEED_VERSION } from './seed'
-import { DndContext, closestCenter, DragEndEvent, DragOverlay, DragStartEvent, useSensor, useSensors, PointerSensor, useDroppable } from '@dnd-kit/core'
+import { DndContext, closestCenter, DragEndEvent, DragOverlay, DragStartEvent, useSensor, useSensors, PointerSensor, TouchSensor, useDroppable } from '@dnd-kit/core'
 import { SortableContext, verticalListSortingStrategy, useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 
@@ -101,7 +101,8 @@ export default function MC() {
   })
 
   const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 8 } })
+    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
+    useSensor(TouchSensor, { activationConstraint: { delay: 150, tolerance: 5 } })
   )
 
   useEffect(()=>{
@@ -409,14 +410,14 @@ export default function MC() {
               <div className="grid grid-cols-2 gap-3">
                 <F lbl="المسؤول">
                   <select value={form.assignee} onChange={e=>setForm({...form,assignee:e.target.value as Assignee})}
-                    className="w-full bg-white/[0.04] border border-white/[0.08] rounded-xl px-4 py-3 text-sm outline-none focus:border-violet-500/50 text-white transition-all">
+                    className="w-full bg-[#1a1d26] border border-white/[0.08] rounded-xl px-4 py-3 text-sm outline-none focus:border-violet-500/50 text-white transition-all [&>option]:bg-[#1a1d26] [&>option]:text-white">
                     <option value="Ahmad">أحمد</option>
                     <option value="Dana">دانا</option>
                   </select>
                 </F>
                 <F lbl="الأولوية">
                   <select value={form.priority} onChange={e=>setForm({...form,priority:e.target.value as Priority})}
-                    className="w-full bg-white/[0.04] border border-white/[0.08] rounded-xl px-4 py-3 text-sm outline-none focus:border-violet-500/50 text-white transition-all">
+                    className="w-full bg-[#1a1d26] border border-white/[0.08] rounded-xl px-4 py-3 text-sm outline-none focus:border-violet-500/50 text-white transition-all [&>option]:bg-[#1a1d26] [&>option]:text-white">
                     <option value="high">🔴 عاجل</option>
                     <option value="medium">🟡 متوسط</option>
                     <option value="low">🟢 منخفض</option>
@@ -424,7 +425,7 @@ export default function MC() {
                 </F>
                 <F lbl="الحالة">
                   <select value={form.status} onChange={e=>setForm({...form,status:e.target.value as Status})}
-                    className="w-full bg-white/[0.04] border border-white/[0.08] rounded-xl px-4 py-3 text-sm outline-none focus:border-violet-500/50 text-white transition-all">
+                    className="w-full bg-[#1a1d26] border border-white/[0.08] rounded-xl px-4 py-3 text-sm outline-none focus:border-violet-500/50 text-white transition-all [&>option]:bg-[#1a1d26] [&>option]:text-white">
                     <option value="todo">📌 للبدء</option>
                     <option value="inprogress">⚡ قيد التنفيذ</option>
                     <option value="done">✅ مكتمل</option>
