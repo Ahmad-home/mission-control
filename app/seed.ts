@@ -1,7 +1,7 @@
 ﻿const now = new Date().toISOString()
 
 // bump this version to force-reset localStorage on next load
-export const SEED_VERSION = '2026-02-27-v6'
+export const SEED_VERSION = '2026-02-28-v1'
 
 export const SEED_TASKS = [
   // ======= AHMAD =======
@@ -270,7 +270,37 @@ export const SEED_TASKS = [
     tags: ['Setup', 'Network'],
     createdAt: now,
   },
+  // ======= DANA — 28 فبراير =======
+  {
+    id: 'd-redesign',
+    title: 'Mission Control Redesign — RTL + Drag & Drop',
+    description: 'إعادة بناء الداشبورد من الصفر: RTL-first، Tajawal font، dark command center، Drag & Drop للكاردات',
+    assignee: 'Dana',
+    priority: 'high',
+    status: 'inprogress',
+    tags: ['Mission Control', 'OpenClaw'],
+    dueDate: '2026-02-28',
+    createdAt: now,
+    activeNow: true,
+  },
+  {
+    id: 'd-fix-filters',
+    title: 'Fix Filters — Remove Duplicate Dana Tag',
+    description: 'إزالة تكرار "دانا" من فلاتر المشاريع — الآن الفلاتر: Projects (الكل/Sonika/Audiom/OpenClaw) + Assignee (الكل/أحمد/دانا)',
+    assignee: 'Dana',
+    priority: 'high',
+    status: 'done',
+    tags: ['Mission Control'],
+    createdAt: now,
+  },
+  {
+    id: 'd-active-indicator',
+    title: 'Add Active Now Indicator',
+    description: 'إضافة مؤشر "شغالة عليها" للكاردات — border متحرك violet + badge 🔥',
+    assignee: 'Dana',
+    priority: 'medium',
+    status: 'done',
+    tags: ['Mission Control', 'OpenClaw'],
+    createdAt: now,
+  },
 ]
-
-
-

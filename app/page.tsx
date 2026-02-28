@@ -2,18 +2,22 @@
 
 import { useState, useEffect } from 'react'
 import { SEED_TASKS, SEED_VERSION } from './seed'
+import { DndContext, closestCenter, DragEndEvent, DragOverlay, DragStartEvent, useSensor, useSensors, PointerSensor, useDroppable } from '@dnd-kit/core'
+import { SortableContext, verticalListSortingStrategy, useSortable } from '@dnd-kit/sortable'
+import { CSS } from '@dnd-kit/utilities'
 
 type Priority = 'high' | 'medium' | 'low'
 type Status = 'todo' | 'inprogress' | 'done'
 type Assignee = 'Ahmad' | 'Dana'
 type ViewMode = 'focus' | 'board' | 'calendar'
-type ProjectFilter = 'all' | 'Sonika' | 'Audiom' | 'Dana' | 'OpenClaw'
+type ProjectFilter = 'all' | 'Sonika' | 'Audiom' | 'OpenClaw'
 type SortBy = 'dueDate' | 'priority' | 'createdAt'
 
 interface Task {
   id: string; title: string; description: string; plan?: string; notes?: string
   assignee: Assignee; priority: Priority; status: Status
   createdAt: string; dueDate?: string; tags: string[]
+  activeNow?: boolean
 }
 
 const PC: Record<Priority,string> = {
@@ -25,14 +29,13 @@ const PL: Record<Priority,string> = { high: 'عاجل', medium: 'متوسط', lo
 const PO: Record<Priority,number> = { high:1, medium:2, low:3 }
 
 const PTAGS: Record<ProjectFilter,string[]> = {
-  all: [], Sonika: ['Sonika','MVP'],
-  Audiom: ['Audiom','Webflow','Benderz','Ramz'],
-  Dana: ['OpenClaw','Mission Control','Heartbeat','Memory','Setup','Browser','Deployment'],
-  OpenClaw: ['OpenClaw','Heartbeat','Memory'],
+  all: [],
+  Sonika: ['Sonika','MVP','DNA','Audio Logo'],
+  Audiom: ['Audiom','Webflow','Benderz','Ramz','n8n','Automation'],
+  OpenClaw: ['OpenClaw','Mission Control','Heartbeat','Memory','Setup','Browser','Deployment'],
 }
 const PFL: Record<ProjectFilter,string> = {
-  all: 'الكل', Sonika: '🎵 Sonika', Audiom: '🏢 Audiom',
-  Dana: '💜 دانا', OpenClaw: '🤖 OpenClaw',
+  all: 'الكل', Sonika: '🎵 Sonika', Audiom: '🏢 Audiom', OpenClaw: '🤖 OpenClaw',
 }
 
 function genId() { return Math.random().toString(36).slice(2,9) }
@@ -67,6 +70,7 @@ function sortT(tasks:Task[], s:SortBy) {
     return new Date(a.createdAt).getTime()-new Date(b.createdAt).getTime()
   })
 }
+
 function FG<T extends string>({opts,val,onChange}:{opts:{v:T;label:string}[];val:T;onChange:(v:T)=>void}) {
   return (
     <div className="flex bg-white/5 rounded-lg p-0.5 gap-0.5 shrink-0">
@@ -79,22 +83,26 @@ function FG<T extends string>({opts,val,onChange}:{opts:{v:T;label:string}[];val
     </div>
   )
 }
-
 export default function MC() {
   const [tasks,setTasks]=useState<Task[]>([])
   const [showForm,setShowForm]=useState(false)
   const [editing,setEditing]=useState<Task|null>(null)
-  const [view,setView]=useState<ViewMode>('focus')
+  const [view,setView]=useState<ViewMode>('board')
   const [proj,setProj]=useState<ProjectFilter>('all')
   const [archive,setArchive]=useState(false)
   const [fA,setFA]=useState<'all'|Assignee>('all')
   const [fP,setFP]=useState<'all'|Priority>('all')
   const [sort,setSort]=useState<SortBy>('dueDate')
+  const [draggedTask,setDraggedTask]=useState<Task|null>(null)
   const [form,setForm]=useState({
     title:'',description:'',plan:'',notes:'',
     assignee:'Ahmad' as Assignee,priority:'medium' as Priority,
     status:'todo' as Status,tags:'',dueDate:'',
   })
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 8 } })
+  )
 
   useEffect(()=>{
     const load=async()=>{
@@ -162,11 +170,30 @@ export default function MC() {
   }
   const del=(id:string)=>save(tasks.filter(t=>t.id!==id))
   const move=(id:string,s:Status)=>save(tasks.map(t=>t.id===id?{...t,status:s}:t))
+  const setActive=(id:string,active:boolean)=>save(tasks.map(t=>t.id===id?{...t,activeNow:active}:t))
   const apf=(list:Task[])=>{
     let r=proj==='all'?list:list.filter(t=>matchP(t,proj))
     if (fA!=='all') r=r.filter(t=>t.assignee===fA)
     if (fP!=='all') r=r.filter(t=>t.priority===fP)
     return r
+  }
+
+  const handleDragStart = (event: DragStartEvent) => {
+    const task = tasks.find(t => t.id === event.active.id)
+    if (task) setDraggedTask(task)
+  }
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    setDraggedTask(null)
+    const { active, over } = event
+    if (!over) return
+    const overId = over.id as string
+    if (overId === 'col-todo' || overId === 'col-inprogress' || overId === 'col-done') {
+      const newStatus = overId.replace('col-', '') as Status
+      if (tasks.find(t => t.id === active.id)?.status !== newStatus) {
+        move(active.id as string, newStatus)
+      }
+    }
   }
 
   const act=apf(tasks.filter(t=>t.status!=='done'))
@@ -216,7 +243,7 @@ export default function MC() {
           {view!=='calendar'&&(
             <div className="flex flex-wrap gap-2 mt-3">
               <FG<'all'|Assignee> val={fA} onChange={v=>{setFA(v);sf2({fA:v})}}
-                opts={[{v:'all',label:'الكل'},{v:'Ahmad',label:'أحمد'},{v:'Dana',label:'دانا'}]} />
+                opts={[{v:'all',label:'الكل'},{v:'Ahmad',label:'👨 أحمد'},{v:'Dana',label:'💜 دانا'}]} />
               <FG<'all'|Priority> val={fP} onChange={v=>{setFP(v);sf2({fP:v})}}
                 opts={[{v:'all',label:'الأولوية'},{v:'high',label:'🔴'},{v:'medium',label:'🟡'},{v:'low',label:'🟢'}]} />
               <FG<SortBy> val={sort} onChange={v=>{setSort(v);sf2({sort:v})}}
@@ -225,6 +252,7 @@ export default function MC() {
           )}
         </div>
       </header>
+
       {/* ─── Stats Bar ─── */}
       {view!=='calendar'&&(
         <div className="grid grid-cols-4 gap-2 px-4 py-3">
@@ -244,18 +272,17 @@ export default function MC() {
           ))}
         </div>
       )}
-
       {/* ─── Focus View ─── */}
       {view==='focus'&&(
         <div className="px-4 pb-24">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             <Col title="قيد التنفيذ" icon="⚡" top="border-t-blue-500" n={ipT.length} add={()=>openAdd('inprogress')}>
               {ipT.length===0&&<E msg="لا يوجد شيء جارٍ الآن"/>}
-              {ipT.map(t=><TC key={t.id} task={t} onEdit={openEdit} onDel={del} onMove={move}/>)}
+              {ipT.map(t=><TC key={t.id} task={t} onEdit={openEdit} onDel={del} onMove={move} onSetActive={setActive}/>)}
             </Col>
             <Col title="عاجل جداً" icon="🔴" top="border-t-red-500" n={urgT.length} add={()=>openAdd('todo')}>
               {urgT.length===0&&<E msg="لا يوجد شيء عاجل"/>}
-              {urgT.map(t=><TC key={t.id} task={t} onEdit={openEdit} onDel={del} onMove={move}/>)}
+              {urgT.map(t=><TC key={t.id} task={t} onEdit={openEdit} onDel={del} onMove={move} onSetActive={setActive}/>)}
             </Col>
           </div>
 
@@ -307,24 +334,35 @@ export default function MC() {
         </div>
       )}
 
-      {/* ─── Board View ─── */}
+      {/* ─── Board View with Drag & Drop ─── */}
       {view==='board'&&(
-        <div className="px-4 pb-24">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-            <Col title="للبدء" icon="📌" top="border-t-slate-500" n={todoT.length} add={()=>openAdd('todo')}>
-              {todoT.length===0&&<E msg="فارغ"/>}
-              {todoT.map(t=><TC key={t.id} task={t} onEdit={openEdit} onDel={del} onMove={move}/>)}
-            </Col>
-            <Col title="قيد التنفيذ" icon="⚡" top="border-t-blue-500" n={ipT.length} add={()=>openAdd('inprogress')}>
-              {ipT.length===0&&<E msg="فارغ"/>}
-              {ipT.map(t=><TC key={t.id} task={t} onEdit={openEdit} onDel={del} onMove={move}/>)}
-            </Col>
-            <Col title="مكتمل" icon="✅" top="border-t-emerald-500" n={done.length} add={()=>{}}>
-              {done.length===0&&<E msg="فارغ"/>}
-              {done.map(t=><TC key={t.id} task={t} onEdit={openEdit} onDel={del} onMove={move} isDone/>)}
-            </Col>
+        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
+          <div className="px-4 pb-24">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+              <DroppableCol id="col-todo" title="للبدء" icon="📌" top="border-t-slate-500" n={todoT.length} add={()=>openAdd('todo')}>
+                <SortableContext items={todoT.map(t=>t.id)} strategy={verticalListSortingStrategy}>
+                  {todoT.length===0&&<E msg="فارغ"/>}
+                  {todoT.map(t=><DraggableTC key={t.id} task={t} onEdit={openEdit} onDel={del} onMove={move} onSetActive={setActive}/>)}
+                </SortableContext>
+              </DroppableCol>
+              <DroppableCol id="col-inprogress" title="قيد التنفيذ" icon="⚡" top="border-t-blue-500" n={ipT.length} add={()=>openAdd('inprogress')}>
+                <SortableContext items={ipT.map(t=>t.id)} strategy={verticalListSortingStrategy}>
+                  {ipT.length===0&&<E msg="فارغ"/>}
+                  {ipT.map(t=><DraggableTC key={t.id} task={t} onEdit={openEdit} onDel={del} onMove={move} onSetActive={setActive}/>)}
+                </SortableContext>
+              </DroppableCol>
+              <DroppableCol id="col-done" title="مكتمل" icon="✅" top="border-t-emerald-500" n={done.length} add={()=>{}}>
+                <SortableContext items={done.map(t=>t.id)} strategy={verticalListSortingStrategy}>
+                  {done.length===0&&<E msg="فارغ"/>}
+                  {done.map(t=><DraggableTC key={t.id} task={t} onEdit={openEdit} onDel={del} onMove={move} onSetActive={setActive} isDone/>)}
+                </SortableContext>
+              </DroppableCol>
+            </div>
           </div>
-        </div>
+          <DragOverlay>
+            {draggedTask && <TC task={draggedTask} onEdit={()=>{}} onDel={()=>{}} onMove={()=>{}} onSetActive={()=>{}} isDragging/>}
+          </DragOverlay>
+        </DndContext>
       )}
 
       {/* ─── Calendar View ─── */}
@@ -455,17 +493,46 @@ function Col({title,icon,top,n,add,children}:{title:string;icon:string;top:strin
   )
 }
 
+function DroppableCol({id,title,icon,top,n,add,children}:{id:string;title:string;icon:string;top:string;n:number;add:()=>void;children:React.ReactNode}) {
+  const { setNodeRef, isOver } = useDroppable({ id })
+  return (
+    <div ref={setNodeRef} className={`bg-[#0e1017] rounded-2xl border border-white/[0.06] border-t-2 ${top} overflow-hidden transition-all ${isOver?'ring-2 ring-violet-500/50 bg-violet-500/5':''}`}>
+      <div className="flex items-center justify-between px-3.5 py-3 border-b border-white/[0.04]">
+        <div className="flex items-center gap-2">
+          <span className="text-base">{icon}</span>
+          <span className="font-semibold text-sm">{title}</span>
+          <span className="text-[10px] bg-white/[0.06] text-white/40 px-1.5 py-0.5 rounded-full">{n}</span>
+        </div>
+        <button onClick={add}
+          className="w-7 h-7 rounded-lg bg-white/[0.04] hover:bg-white/10 flex items-center justify-center text-white/30 hover:text-white transition-all">
+          +
+        </button>
+      </div>
+      <div className="p-3 flex flex-col gap-2 min-h-[120px]">{children}</div>
+    </div>
+  )
+}
+
 function E({msg}:{msg:string}) {
   return <p className="text-xs text-white/20 text-center py-6">{msg}</p>
 }
-
-function TC({task,onEdit,onDel,onMove,isDone}:{task:Task;onEdit:(t:Task)=>void;onDel:(id:string)=>void;onMove:(id:string,s:Status)=>void;isDone?:boolean}) {
+function TC({task,onEdit,onDel,onMove,onSetActive,isDone,isDragging}:{task:Task;onEdit:(t:Task)=>void;onDel:(id:string)=>void;onMove:(id:string,s:Status)=>void;onSetActive:(id:string,active:boolean)=>void;isDone?:boolean;isDragging?:boolean}) {
   const [exp,setExp]=useState(false)
   const due=fmtDue(task.dueDate)
   const ov=due?.label.includes('تأخّر')
+  const activeClass = task.activeNow ? 'ring-2 ring-violet-500 animate-pulse' : ''
   return (
-    <div className={`rounded-xl p-3 border transition-all cursor-pointer ${isDone?'opacity-50 bg-white/[0.015] border-white/[0.04]':ov?'bg-[#14171f] border-red-500/25 hover:border-red-500/40':'bg-[#14171f] border-white/[0.06] hover:border-white/15'}`}
+    <div className={`rounded-xl p-3 border transition-all cursor-pointer ${isDragging?'opacity-70 scale-105 shadow-2xl':''} ${isDone?'opacity-50 bg-white/[0.015] border-white/[0.04]':ov?'bg-[#14171f] border-red-500/25 hover:border-red-500/40':'bg-[#14171f] border-white/[0.06] hover:border-white/15'} ${activeClass}`}
       onClick={()=>onEdit(task)}>
+      {task.activeNow && (
+        <div className="flex items-center gap-1.5 mb-2 text-violet-400">
+          <span className="relative flex h-2 w-2">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-violet-400 opacity-75"></span>
+            <span className="relative inline-flex rounded-full h-2 w-2 bg-violet-500"></span>
+          </span>
+          <span className="text-[10px] font-medium">🔥 شغالة عليها</span>
+        </div>
+      )}
       <div className="flex items-start gap-2 mb-2">
         <h3 className={`flex-1 font-medium text-sm leading-snug min-w-0 ${isDone?'line-through text-white/30':'text-white/90'}`}>{task.title}</h3>
         <button onClick={e=>{e.stopPropagation();onDel(task.id)}}
@@ -515,8 +582,30 @@ function TC({task,onEdit,onDel,onMove,isDone}:{task:Task;onEdit:(t:Task)=>void;o
               {task.status==='todo'?'⚡ ابدأ':'✅ أكمل'}
             </button>
           )}
+          {task.status==='inprogress'&&!task.activeNow&&task.assignee==='Dana'&&(
+            <button onClick={()=>onSetActive(task.id,true)}
+              className="text-[10px] bg-violet-500/10 hover:bg-violet-500/20 text-violet-400 px-2.5 py-1 rounded-lg transition-all">
+              🔥 شغالة
+            </button>
+          )}
+          {task.activeNow&&(
+            <button onClick={()=>onSetActive(task.id,false)}
+              className="text-[10px] bg-white/[0.04] hover:bg-white/10 px-2.5 py-1 rounded-lg text-white/35 transition-all">
+              إيقاف
+            </button>
+          )}
         </div>
       )}
+    </div>
+  )
+}
+
+function DraggableTC({task,onEdit,onDel,onMove,onSetActive,isDone}:{task:Task;onEdit:(t:Task)=>void;onDel:(id:string)=>void;onMove:(id:string,s:Status)=>void;onSetActive:(id:string,active:boolean)=>void;isDone?:boolean}) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: task.id })
+  const style = { transform: CSS.Transform.toString(transform), transition }
+  return (
+    <div ref={setNodeRef} style={style} {...attributes} {...listeners}>
+      <TC task={task} onEdit={onEdit} onDel={onDel} onMove={onMove} onSetActive={onSetActive} isDone={isDone} isDragging={isDragging}/>
     </div>
   )
 }
@@ -578,3 +667,4 @@ function Cal({tasks}:{tasks:Task[]}) {
     </div>
   )
 }
+
