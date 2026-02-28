@@ -31,9 +31,9 @@ const PRIORITY_COLORS: Record<Priority, string> = {
 }
 
 const PRIORITY_LABELS: Record<Priority, string> = {
-  high: 'ًں”´ ط¹ط§ظ„ظٹ',
-  medium: 'ًںں، ظ…طھظˆط³ط·',
-  low: 'ًںں¢ ظ…ظ†ط®ظپط¶',
+  high: 'عاجل',
+  medium: 'متوسط',
+  low: 'منخفض',
 }
 
 const PRIORITY_ORDER: Record<Priority, number> = { high: 1, medium: 2, low: 3 }
@@ -47,11 +47,11 @@ const PROJECT_TAGS: Record<ProjectFilter, string[]> = {
 }
 
 const PROJECT_LABELS: Record<ProjectFilter, string> = {
-  all: 'ًںŒگ ط§ظ„ظƒظ„',
-  Sonika: 'ًںژµ Sonika',
-  Audiom: 'ًںڈ¢ Audiom',
-  Dana: 'âœ¨ ط¯ط§ظ†ط§',
-  OpenClaw: 'ًں¤– OpenClaw',
+  all: 'الكل',
+  Sonika: '🎵 Sonika',
+  Audiom: '🏢 Audiom',
+  Dana: '💜 دانا',
+  OpenClaw: '🤖 OpenClaw',
 }
 
 function generateId() {
@@ -70,11 +70,11 @@ function formatDueDate(dueDate?: string): { label: string; color: string } | nul
   today.setHours(0, 0, 0, 0)
   due.setHours(0, 0, 0, 0)
   const diff = Math.round((due.getTime() - today.getTime()) / (1000 * 60 * 60 * 24))
-  if (diff < 0) return { label: `ظ…طھط£ط®ط± ${Math.abs(diff)} ظٹظˆظ…`, color: 'text-red-400 bg-red-500/10 border-red-500/30' }
-  if (diff === 0) return { label: 'ط§ظ„ظٹظˆظ…', color: 'text-orange-400 bg-orange-500/10 border-orange-500/30' }
-  if (diff === 1) return { label: 'ط؛ط¯ط§ظ‹', color: 'text-yellow-400 bg-yellow-500/10 border-yellow-500/30' }
-  if (diff <= 7) return { label: `${diff} ط£ظٹط§ظ…`, color: 'text-blue-400 bg-blue-500/10 border-blue-500/30' }
-  const months = ['ظٹظ†ط§ظٹط±','ظپط¨ط±ط§ظٹط±','ظ…ط§ط±ط³','ط£ط¨ط±ظٹظ„','ظ…ط§ظٹظˆ','ظٹظˆظ†ظٹظˆ','ظٹظˆظ„ظٹظˆ','ط£ط؛ط³ط·ط³','ط³ط¨طھظ…ط¨ط±','ط£ظƒطھظˆط¨ط±','ظ†ظˆظپظ…ط¨ط±','ط¯ظٹط³ظ…ط¨ط±']
+  if (diff < 0) return { label: `تأخّر ${Math.abs(diff)} أيام`, color: 'text-red-400 bg-red-500/10 border-red-500/30' }
+  if (diff === 0) return { label: 'اليوم', color: 'text-orange-400 bg-orange-500/10 border-orange-500/30' }
+  if (diff === 1) return { label: 'غداً', color: 'text-yellow-400 bg-yellow-500/10 border-yellow-500/30' }
+  if (diff <= 7) return { label: `${diff} أيام`, color: 'text-blue-400 bg-blue-500/10 border-blue-500/30' }
+  const months = ['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر']
   return { label: `${new Date(dueDate).getDate()} ${months[new Date(dueDate).getMonth()]}`, color: 'text-white/40 bg-white/5 border-white/10' }
 }
 
@@ -282,7 +282,7 @@ export default function MissionControl() {
             </div>
           </div>
           <div className="flex items-center gap-2"><div className="flex bg-white/5 rounded-lg p-1 gap-1">
-            {([{id:'focus',label:'ًںژ¯ Focus'},{id:'board',label:'ًں—‚ Board'},{id:'calendar',label:'ًں“… Calendar'}] as {id:ViewMode;label:string}[]).map(tab => (
+            {([{id:'focus',label:'🎯 Focus'},{id:'board',label:'📌 Board'},{id:'calendar',label:'📅 Calendar'}] as {id:ViewMode;label:string}[]).map(tab => (
               <button key={tab.id} onClick={() => setView(tab.id)}
                 className={`px-3 py-2 rounded-md text-xs font-medium transition-all ${view===tab.id?'bg-white/10 text-white':'text-white/40 hover:text-white/60'}`}>
                 {tab.label}
@@ -314,19 +314,19 @@ export default function MissionControl() {
               value={filterAssignee}
               onChange={v => { setFilterAssignee(v); saveFilters({ filterAssignee: v }) }}
               options={[
-                { value: 'all', label: 'ًں‘¥ ط§ظ„ظƒظ„' },
-                { value: 'Ahmad', label: 'ًں‘¤ ط£ط­ظ…ط¯' },
-                { value: 'Dana', label: 'âœ¨ ط¯ط§ظ†ط§' },
+              { value: 'all', label: 'الكل' },
+              { value: 'Ahmad', label: 'أحمد' },
+              { value: 'Dana', label: 'دانا' },
               ]}
             />
             <FilterGroup<'all' | Priority>
               value={filterPriority}
               onChange={v => { setFilterPriority(v); saveFilters({ filterPriority: v }) }}
               options={[
-                { value: 'all', label: 'ط§ظ„ط£ظˆظ„ظˆظٹط©' },
-                { value: 'high', label: 'ًں”´' },
-                { value: 'medium', label: 'ًںں،' },
-                { value: 'low', label: 'ًںں¢' },
+              { value: 'all', label: 'الأولوية' },
+              { value: 'high', label: '🔴 عاجل' },
+              { value: 'medium', label: '🟡 متوسط' },
+              { value: 'low', label: '🟢 منخفض' },
               ]}
             />
             <div className="h-4 w-px bg-white/10" />
@@ -334,9 +334,9 @@ export default function MissionControl() {
               value={sortBy}
               onChange={v => { setSortBy(v); saveFilters({ sortBy: v }) }}
               options={[
-                { value: 'dueDate', label: 'ًں“… ط§ظ„طھط§ط±ظٹط®' },
-                { value: 'priority', label: 'ًں”´ ط§ظ„ط£ظˆظ„ظˆظٹط©' },
-                { value: 'createdAt', label: 'ًں•گ ط§ظ„ط¥ظ†ط´ط§ط،' },
+              { value: 'dueDate', label: '📅 الموعد' },
+              { value: 'priority', label: '🔥 الأولوية' },
+              { value: 'createdAt', label: '🕒 الأقدم' },
               ]}
             />
           </div>
@@ -347,10 +347,10 @@ export default function MissionControl() {
       {view !== 'calendar' && (
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 p-4">
           {[
-            {label:'ظ†ط´ط·',value:inprogressTasks.length,icon:'âڑ،',color:'text-blue-400'},
-            {label:'ط¹ط§ط¬ظ„',value:urgentTasks.length,icon:'ًں”´',color:'text-red-400'},
-            {label:'ط£ط­ظ…ط¯',value:applyFilters(tasks.filter(t=>t.assignee==='Ahmad'&&t.status!=='done')).length,icon:'ًں‘¤',color:'text-white'},
-            {label:'ط¯ط§ظ†ط§',value:applyFilters(tasks.filter(t=>t.assignee==='Dana'&&t.status!=='done')).length,icon:'âœ¨',color:'text-violet-400'},
+          {label:'نشط',value:inprogressTasks.length,icon:'⚡',color:'text-blue-400'},
+          {label:'عاجل',value:urgentTasks.length,icon:'🔴',color:'text-red-400'},
+          {label:'أحمد',value:applyFilters(tasks.filter(t=>t.assignee==='Ahmad'&&t.status!=='done')).length,icon:'👨',color:'text-white'},
+          {label:'دانا',value:applyFilters(tasks.filter(t=>t.assignee==='Dana'&&t.status!=='done')).length,icon:'💜',color:'text-violet-400'},
           ].map(stat => (
             <div key={stat.label} className="bg-white/5 rounded-xl p-3 border border-white/10 flex items-center gap-3">
               <span className="text-xl">{stat.icon}</span>
@@ -367,30 +367,31 @@ export default function MissionControl() {
       {view === 'focus' && (
         <div className="px-4 pb-6">
           <div className="flex flex-col md:grid md:grid-cols-2 gap-4">
-            <Column title="ظ†ط´ط· ط§ظ„ط¢ظ†" icon="âڑ،" color="border-t-blue-400" count={inprogressTasks.length} onAdd={() => openAdd('inprogress')}>
-              {inprogressTasks.length === 0 && <p className="text-xs text-white/20 text-center py-6">ظ„ط§ ظٹظˆط¬ط¯ ط´ظٹط، ظ†ط´ط· ط§ظ„ط¢ظ†</p>}
+            <Column title="قيد التنفيذ" icon="⚡" color="border-t-blue-400" count={inprogressTasks.length} onAdd={() => openAdd('inprogress')}>
+              {inprogressTasks.length === 0 && <p className="text-xs text-white/20 text-center py-6">لا يوجد شيء جارٍ الآن</p>}
               {inprogressTasks.map(t => <TaskCard key={t.id} task={t} onEdit={openEdit} onDelete={deleteTask} onMove={moveTask} />)}
             </Column>
-            <Column title="ط¹ط§ط¬ظ„ â€” ظٹط­طھط§ط¬ ط¨ط¯ط§ظٹط©" icon="ًں”´" color="border-t-red-400" count={urgentTasks.length} onAdd={() => openAdd('todo')}>
-              {urgentTasks.length === 0 && <p className="text-xs text-white/20 text-center py-6">ظ„ط§ ظٹظˆط¬ط¯ ط´ظٹط، ط¹ط§ط¬ظ„ ًںژ‰</p>}
+            <Column title="عاجل جداً" icon="🔴" color="border-t-red-400" count={urgentTasks.length} onAdd={() => openAdd('todo')}>
+              {urgentTasks.length === 0 && <p className="text-xs text-white/20 text-center py-6">لا يوجد شيء عاجل</p>}
               {urgentTasks.map(t => <TaskCard key={t.id} task={t} onEdit={openEdit} onDelete={deleteTask} onMove={moveTask} />)}
             </Column>
           </div>
 
           {pendingTasks.length > 0 && (
-            <div className="mt-4">
-              <p className="text-xs text-white/30 mb-3 px-1">ًں“‹ ظ‚ط§ط¦ظ…ط© ط§ظ„ط§ظ†طھط¸ط§ط±</p>
+              <p className="text-xs text-white/30 mb-3 px-1">📥 قائمة المهام</p>
+              <p className="text-xs text-white/30 mb-3 px-1">📥 قائمة الانتظار</p>
               <div className="flex flex-col gap-2">
                 {pendingTasks.map(task => {
                   const due = formatDueDate(task.dueDate)
                   return (
-                    <div key={task.id} className="bg-white/[0.03] rounded-xl px-4 py-3 border border-white/10 hover:border-white/20 cursor-pointer flex items-center gap-3 transition-all" onClick={() => openEdit(task)}>
-                      <span className="text-sm">{task.priority==='medium'?'ًںں،':'ًںں¢'}</span>
+                      <span className="text-sm">{task.priority==='medium'?'🟡':'🟢'}</span>
+                      <span className="text-sm">{task.priority==='medium'?'🟡':'🟢'}</span>
                       <span className="text-sm flex-1">{task.title}</span>
                       {due && <span className={`text-[10px] px-2 py-0.5 rounded-full border ${due.color}`}>{due.label}</span>}
-                      <span className="text-xs text-white/30">{task.assignee==='Ahmad'?'ًں‘¤':'âœ¨'}</span>
+                      <span className="text-xs text-white/30">{task.assignee==='Ahmad'?'أحمد':'دانا'}</span>
                       <button onClick={e => { e.stopPropagation(); moveTask(task.id,'inprogress') }}
-                        className="text-xs bg-white/5 hover:bg-blue-500/20 hover:text-blue-300 px-2 py-1 rounded-md text-white/40 transition-all">ط§ط¨ط¯ط£</button>
+                        className="text-xs bg-white/5 hover:bg-blue-500/20 hover:text-blue-300 px-2 py-1 rounded-md text-white/40 transition-all">⚡ ابدأ</button>
+                        className="text-xs bg-white/5 hover:bg-blue-500/20 hover:text-blue-300 px-2 py-1 rounded-md text-white/40 transition-all">⚡ ابدأ</button>
                     </div>
                   )
                 })}
@@ -400,8 +401,11 @@ export default function MissionControl() {
 
           <div className="mt-6">
             <button onClick={() => setShowFocusArchive(!showFocusArchive)}
+            <button onClick={() => setShowFocusArchive(!showFocusArchive)}
               className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl border border-dashed border-white/10 text-xs text-white/30 hover:text-white/50 hover:border-white/20 transition-all">
-              {showFocusArchive ? 'â–² ط¥ط®ظپط§ط، ط§ظ„ظ…ظƒطھظ…ظ„' : `â–¼ ط¹ط±ط¶ ط§ظ„ظ…ظƒطھظ…ظ„ (${doneTasks.length})`}
+              {showFocusArchive ? '✖ إخفاء المكتملة' : `✔ عرض المكتملة (${doneTasks.length})`}
+              {showFocusArchive ? '✖ إخفاء المكتملة' : `✔ عرض المكتملة (${doneTasks.length})`}
+              {showFocusArchive ? '✖ إخفاء المكتملة' : `✔ عرض المكتملة (${doneTasks.length})`}
             </button>
             {showFocusArchive && (
               <div className="mt-3 flex flex-col gap-2">
@@ -409,7 +413,7 @@ export default function MissionControl() {
                   <div key={task.id} className="bg-white/[0.02] rounded-xl px-4 py-3 border border-white/5 flex items-center gap-3 opacity-60 cursor-pointer hover:opacity-80" onClick={() => openEdit(task)}>
                     <span className="text-sm">âœ…</span>
                     <span className="text-sm flex-1 line-through text-white/50">{task.title}</span>
-                    <span className="text-xs text-white/30">{task.assignee==='Ahmad'?'ًں‘¤':'âœ¨'}</span>
+                    <span className="text-xs text-white/30">{task.assignee==='Ahmad'?'أحمد':'دانا'}</span>
                   </div>
                 ))}
               </div>
@@ -421,19 +425,19 @@ export default function MissionControl() {
       {/* BOARD VIEW â€” Done column always visible */}
       {view === 'board' && (
         <div className="px-4 pb-6">
-          <div className="flex flex-col md:grid md:grid-cols-3 gap-4">
-            <Column title="ظ‚ط§ط¦ظ…ط© ط§ظ„ظ…ظ‡ط§ظ…" icon="ًں“‹" color="border-t-slate-400" count={todoTasks.length} onAdd={() => openAdd('todo')}>
-              {todoTasks.map(t => <TaskCard key={t.id} task={t} onEdit={openEdit} onDelete={deleteTask} onMove={moveTask} />)}
-              {todoTasks.length === 0 && <p className="text-xs text-white/20 text-center py-6">ظ„ط§ طھظˆط¬ط¯ ظ…ظ‡ط§ظ…</p>}
-            </Column>
-            <Column title="ظ‚ظٹط¯ ط§ظ„طھظ†ظپظٹط°" icon="âڑ،" color="border-t-blue-400" count={inprogressTasks.length} onAdd={() => openAdd('inprogress')}>
-              {inprogressTasks.map(t => <TaskCard key={t.id} task={t} onEdit={openEdit} onDelete={deleteTask} onMove={moveTask} />)}
-              {inprogressTasks.length === 0 && <p className="text-xs text-white/20 text-center py-6">ظ„ط§ طھظˆط¬ط¯ ظ…ظ‡ط§ظ…</p>}
+            <Column title="قائمة المهام" icon="📌" color="border-t-slate-400" count={todoTasks.length} onAdd={() => openAdd('todo')}>
+            <Column title="قائمة المهام" icon="📌" color="border-t-slate-400" count={todoTasks.length} onAdd={() => openAdd('todo')}>
+              {todoTasks.length === 0 && <p className="text-xs text-white/20 text-center py-6">فارغ</p>}
+              {todoTasks.length === 0 && <p className="text-xs text-white/20 text-center py-6">فارغ</p>}
+            <Column title="قيد التنفيذ" icon="⚡" color="border-t-blue-400" count={inprogressTasks.length} onAdd={() => openAdd('inprogress')}>
+            <Column title="قيد التنفيذ" icon="⚡" color="border-t-blue-400" count={inprogressTasks.length} onAdd={() => openAdd('inprogress')}>
+              {inprogressTasks.length === 0 && <p className="text-xs text-white/20 text-center py-6">فارغ</p>}
+              {inprogressTasks.length === 0 && <p className="text-xs text-white/20 text-center py-6">فارغ</p>}
             </Column>
             {/* Done â€” always visible */}
             <Column title="ظ…ظƒطھظ…ظ„" icon="âœ…" color="border-t-green-400" count={doneTasks.length} onAdd={() => {}}>
-              {doneTasks.map(t => <TaskCard key={t.id} task={t} onEdit={openEdit} onDelete={deleteTask} onMove={moveTask} done />)}
-              {doneTasks.length === 0 && <p className="text-xs text-white/20 text-center py-6">ظ„ط§ ظٹظˆط¬ط¯ ظ…ظƒطھظ…ظ„ ط¨ط¹ط¯</p>}
+              {doneTasks.length === 0 && <p className="text-xs text-white/20 text-center py-6">فارغ</p>}
+              {doneTasks.length === 0 && <p className="text-xs text-white/20 text-center py-6">فارغ</p>}
             </Column>
           </div>
         </div>
@@ -451,68 +455,77 @@ export default function MissionControl() {
       {/* Modal */}
       {showForm && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-end md:items-center justify-center z-50">
-          <div className="bg-[#1a1d26] rounded-t-2xl md:rounded-2xl border border-white/10 w-full md:max-w-lg p-5 md:p-6 max-h-[92vh] overflow-y-auto">
-            <h2 className="text-lg font-bold mb-5">{editingTask ? 'âœڈï¸ڈ طھط¹ط¯ظٹظ„ ط§ظ„ظ…ظ‡ظ…ط©' : 'â‍• ظ…ظ‡ظ…ط© ط¬ط¯ظٹط¯ط©'}</h2>
-            <div className="flex flex-col gap-4">
-              <Field label="ط§ظ„ط¹ظ†ظˆط§ظ† *">
-                <input value={form.title} onChange={e => setForm({...form,title:e.target.value})} placeholder="ط§ط³ظ… ط§ظ„ظ…ظ‡ظ…ط©..."
+            <h2 className="text-lg font-bold mb-5">{editingTask ? 'تعديل المهمة' : 'إضافة مهمة'}</h2>
+            <h2 className="text-lg font-bold mb-5">{editingTask ? 'تعديل المهمة' : 'إضافة مهمة'}</h2>
+              <Field label="العنوان *">
+                <input value={form.title} onChange={e => setForm({...form,title:e.target.value})} placeholder="عنوان المهمة..."
                   className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm outline-none focus:border-violet-500/50 transition-all placeholder:text-white/20" />
-              </Field>
-              <Field label="ط§ظ„ظˆطµظپ">
-                <textarea value={form.description} onChange={e => setForm({...form,description:e.target.value})} placeholder="طھظپط§طµظٹظ„ ط§ط®طھظٹط§ط±ظٹط©..." rows={2}
+                <input value={form.title} onChange={e => setForm({...form,title:e.target.value})} placeholder="عنوان المهمة..."
+                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm outline-none focus:border-violet-500/50 transition-all placeholder:text-white/20" />
+                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm outline-none focus:border-violet-500/50 transition-all placeholder:text-white/20" />
+              <Field label="الوصف">
+                <textarea value={form.description} onChange={e => setForm({...form,description:e.target.value})} placeholder="وصف المهمة..." rows={2}
                   className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm outline-none focus:border-violet-500/50 transition-all placeholder:text-white/20 resize-none" />
-              </Field>
-              <Field label="ًں“‌ ظ…ظ„ط§ط­ط¸ط§طھ / طھظپط§طµظٹظ„ ط¥ط¶ط§ظپظٹط©">
-                <textarea value={form.notes} onChange={e => setForm({...form,notes:e.target.value})} placeholder="ط£ظٹ طھظپط§طµظٹظ„ ط¥ط¶ط§ظپظٹط©طŒ ط±ط³ط§ط¦ظ„طŒ ط£ظˆ ط³ظٹط§ظ‚ طھط­طھط§ط¬ظ‡ ط¯ط§ظ†ط§..." rows={3}
+                <textarea value={form.description} onChange={e => setForm({...form,description:e.target.value})} placeholder="وصف المهمة..." rows={2}
+                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm outline-none focus:border-violet-500/50 transition-all placeholder:text-white/20 resize-none" />
+                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm outline-none focus:border-violet-500/50 transition-all placeholder:text-white/20 resize-none" />
+              <Field label="📝 ملاحظات">
+                <textarea value={form.notes} onChange={e => setForm({...form,notes:e.target.value})} placeholder="ملاحظات وتفاصيل..." rows={3}
                   className="w-full bg-amber-500/5 border border-amber-500/20 rounded-xl px-4 py-3 text-sm outline-none focus:border-amber-500/40 transition-all placeholder:text-white/20 resize-none leading-relaxed" />
-              </Field>
-              <Field label="ًں“‹ ط®ط·ط© ط¯ط§ظ†ط§ / Plan">
-                <textarea value={form.plan} onChange={e => setForm({...form,plan:e.target.value})} placeholder="ط§ظ„ط®ط·ظˆط§طھ ط§ظ„طھظٹ ط³طھطھط¨ط¹ظ‡ط§ ط¯ط§ظ†ط§ ظ„ط¥ظ†ط¬ط§ط² ظ‡ط°ظ‡ ط§ظ„ظ…ظ‡ظ…ط©..." rows={4}
+                <textarea value={form.notes} onChange={e => setForm({...form,notes:e.target.value})} placeholder="ملاحظات وتفاصيل..." rows={3}
+                  className="w-full bg-amber-500/5 border border-amber-500/20 rounded-xl px-4 py-3 text-sm outline-none focus:border-amber-500/40 transition-all placeholder:text-white/20 resize-none leading-relaxed" />
+                  className="w-full bg-amber-500/5 border border-amber-500/20 rounded-xl px-4 py-3 text-sm outline-none focus:border-amber-500/40 transition-all placeholder:text-white/20 resize-none leading-relaxed" />
+              <Field label="🛠 خطة التنفيذ / Plan">
+                <textarea value={form.plan} onChange={e => setForm({...form,plan:e.target.value})} placeholder="خطوات التنفيذ..." rows={4}
+                  className="w-full bg-violet-500/5 border border-violet-500/20 rounded-xl px-4 py-3 text-sm outline-none focus:border-violet-500/50 transition-all placeholder:text-white/20 resize-none font-mono text-xs leading-relaxed" />
+                <textarea value={form.plan} onChange={e => setForm({...form,plan:e.target.value})} placeholder="خطوات التنفيذ..." rows={4}
+                  className="w-full bg-violet-500/5 border border-violet-500/20 rounded-xl px-4 py-3 text-sm outline-none focus:border-violet-500/50 transition-all placeholder:text-white/20 resize-none font-mono text-xs leading-relaxed" />
                   className="w-full bg-violet-500/5 border border-violet-500/20 rounded-xl px-4 py-3 text-sm outline-none focus:border-violet-500/50 transition-all placeholder:text-white/20 resize-none font-mono text-xs leading-relaxed" />
               </Field>
-              <div className="grid grid-cols-2 gap-3">
-                <Field label="ط§ظ„ظ…ط³ظ†ط¯ ط¥ظ„ظٹظ‡">
+              <Field label="المسؤول">
+              <Field label="المسؤول">
                   <select value={form.assignee} onChange={e => setForm({...form,assignee:e.target.value as Assignee})}
-                    className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-3 text-sm outline-none focus:border-violet-500/50 transition-all text-white">
-                    <option value="Ahmad">ًں‘¤ Ahmad</option>
-                    <option value="Dana">âœ¨ Dana</option>
+                    <option value="Ahmad">أحمد</option>
+                    <option value="Dana">دانا</option>
+                    <option value="Dana">دانا</option>
                   </select>
-                </Field>
-                <Field label="ط§ظ„ط£ظˆظ„ظˆظٹط©">
+              <Field label="الأولوية">
+              <Field label="الأولوية">
                   <select value={form.priority} onChange={e => setForm({...form,priority:e.target.value as Priority})}
-                    className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-3 text-sm outline-none focus:border-violet-500/50 transition-all text-white">
-                    <option value="high">ًں”´ ط¹ط§ظ„ظٹ</option>
-                    <option value="medium">ًںں، ظ…طھظˆط³ط·</option>
-                    <option value="low">ًںں¢ ظ…ظ†ط®ظپط¶</option>
+                    <option value="high">🔴 عاجل</option>
+                    <option value="medium">🟡 متوسط</option>
+                    <option value="low">🟢 منخفض</option>
+                    <option value="low">🟢 منخفض</option>
                   </select>
-                </Field>
-                <Field label="ط§ظ„ط­ط§ظ„ط©">
+              <Field label="الحالة">
+              <Field label="الحالة">
                   <select value={form.status} onChange={e => setForm({...form,status:e.target.value as Status})}
-                    className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-3 text-sm outline-none focus:border-violet-500/50 transition-all text-white">
-                    <option value="todo">ًں“‹ ظ‚ط§ط¦ظ…ط© ط§ظ„ظ…ظ‡ط§ظ…</option>
-                    <option value="inprogress">âڑ، ظ‚ظٹط¯ ط§ظ„طھظ†ظپظٹط°</option>
+                    <option value="todo">📌 للبدء</option>
+                    <option value="inprogress">⚡ قيد التنفيذ</option>
+                    <option value="done">✅ مكتمل</option>
                     <option value="done">âœ… ظ…ظƒطھظ…ظ„</option>
                   </select>
-                </Field>
-                <Field label="ًں“… طھط§ط±ظٹط® ط§ظ„ط§ط³طھط­ظ‚ط§ظ‚">
+              <Field label="📅 تاريخ الاستحقاق">
+              <Field label="📅 تاريخ الاستحقاق">
                   <input type="date" value={form.dueDate} onChange={e => setForm({...form,dueDate:e.target.value})}
                     className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-3 text-sm outline-none focus:border-violet-500/50 transition-all text-white [color-scheme:dark]" />
                 </Field>
-              </div>
-              <Field label="طھط§ط؛ط§طھ (ظ…ظپطµظˆظ„ط© ط¨ظپط§طµظ„ط©)">
+              <Field label="تاغات مفصولة بفاصلة">
+              <Field label="تاغات مفصولة بفاصلة">
                 <input value={form.tags} onChange={e => setForm({...form,tags:e.target.value})} placeholder="Sonika, Audiom, ..."
                   className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm outline-none focus:border-violet-500/50 transition-all placeholder:text-white/20 text-white" />
               </Field>
             </div>
             <div className="flex gap-3 mt-6">
-              <button onClick={handleSubmit} className="flex-1 bg-violet-600 hover:bg-violet-500 text-white font-medium py-3.5 rounded-xl transition-all text-sm">
-                {editingTask ? 'ط­ظپط¸ ط§ظ„طھط؛ظٹظٹط±ط§طھ' : 'ط¥ط¶ط§ظپط© ط§ظ„ظ…ظ‡ظ…ط©'}
+              {editingTask ? 'حفظ التعديلات' : 'إضافة المهمة'}
+              {editingTask ? 'حفظ التعديلات' : 'إضافة المهمة'}
               </button>
               {editingTask && (
                 <button onClick={() => { deleteTask(editingTask.id); setShowForm(false) }}
-                  className="px-4 bg-red-500/10 hover:bg-red-500/20 text-red-400 font-medium py-3.5 rounded-xl transition-all text-sm border border-red-500/20">ط­ط°ظپ</button>
-              )}
-              <button onClick={() => setShowForm(false)} className="px-6 bg-white/5 hover:bg-white/10 text-white/60 font-medium py-3.5 rounded-xl transition-all text-sm">ط¥ظ„ط؛ط§ط،</button>
+                  className="px-4 bg-red-500/10 hover:bg-red-500/20 text-red-400 font-medium py-3.5 rounded-xl transition-all text-sm border border-red-500/20">حذف</button>
+                  className="px-4 bg-red-500/10 hover:bg-red-500/20 text-red-400 font-medium py-3.5 rounded-xl transition-all text-sm border border-red-500/20">حذف</button>
+              <button onClick={() => setShowForm(false)} className="px-6 bg-white/5 hover:bg-white/10 text-white/60 font-medium py-3.5 rounded-xl transition-all text-sm">إلغاء</button>
+              <button onClick={() => setShowForm(false)} className="px-6 bg-white/5 hover:bg-white/10 text-white/60 font-medium py-3.5 rounded-xl transition-all text-sm">إلغاء</button>
             </div>
           </div>
         </div>
@@ -552,8 +565,8 @@ function TaskCard({ task, onEdit, onDelete, onMove, done }: {
   task: Task; onEdit: (t: Task) => void; onDelete: (id: string) => void; onMove: (id: string, s: Status) => void; done?: boolean
 }) {
   const [expanded, setExpanded] = useState(false)
-  const due = formatDueDate(task.dueDate)
-  const isOverdue = due?.label.includes('ظ…طھط£ط®ط±')
+  const isOverdue = due?.label.includes('تأخّر')
+  const isOverdue = due?.label.includes('تأخّر')
 
   return (
     <div className={`rounded-xl p-4 border transition-all group cursor-pointer active:scale-[0.99] ${
@@ -574,8 +587,8 @@ function TaskCard({ task, onEdit, onDelete, onMove, done }: {
       {/* Notes from Ahmad â€” always visible */}
       {task.notes && !done && (
         <div className="mb-3 bg-amber-500/8 border border-amber-500/20 rounded-lg px-3 py-2">
-          <div className="flex items-center gap-1.5 mb-1">
-            <span className="text-[9px] text-amber-400/70 font-medium uppercase tracking-wide">ًں“‌ ظ…ظ„ط§ط­ط¸ط© ط£ط­ظ…ط¯</span>
+              <span className="text-[9px] text-amber-400/70 font-medium uppercase tracking-wide">📝 ملاحظات</span>
+              <span className="text-[9px] text-amber-400/70 font-medium uppercase tracking-wide">📝 ملاحظات</span>
           </div>
           <p className="text-xs text-amber-200/70 leading-relaxed whitespace-pre-wrap">{task.notes}</p>
         </div>
@@ -584,8 +597,8 @@ function TaskCard({ task, onEdit, onDelete, onMove, done }: {
       {task.plan && !done && (
         <div className="mb-3">
           <button onClick={e => { e.stopPropagation(); setExpanded(!expanded) }}
-            className="text-[10px] text-violet-400/70 hover:text-violet-400 transition-all flex items-center gap-1">
-            {expanded ? 'â–² ط¥ط®ظپط§ط، ط®ط·ط© ط¯ط§ظ†ط§' : 'â–¼ ط¹ط±ط¶ ط®ط·ط© ط¯ط§ظ†ط§'}
+            {expanded ? '▲ إخفاء الخطة' : '▼ عرض الخطة'}
+            {expanded ? '▲ إخفاء الخطة' : '▼ عرض الخطة'}
           </button>
           {expanded && (
             <div className="mt-2 bg-violet-500/5 rounded-lg p-3 border border-violet-500/20">
@@ -597,8 +610,8 @@ function TaskCard({ task, onEdit, onDelete, onMove, done }: {
 
       <div className="flex items-center gap-2 flex-wrap">
         <span className={`text-xs px-2 py-0.5 rounded-full ${PRIORITY_COLORS[task.priority]}`}>{PRIORITY_LABELS[task.priority]}</span>
-        <span className="text-xs bg-violet-500/20 text-violet-300 border border-violet-500/30 px-2 py-0.5 rounded-full">
-          {task.assignee === 'Ahmad' ? 'ًں‘¤' : 'âœ¨'}
+              {task.assignee === 'Ahmad' ? 'أحمد' : 'دانا'}
+              {task.assignee === 'Ahmad' ? 'أحمد' : 'دانا'}
         </span>
         {due && <span className={`text-[10px] px-2 py-0.5 rounded-full border ${due.color}`}>ًں“… {due.label}</span>}
         {task.tags.slice(0, 2).map(tag => (
@@ -610,13 +623,12 @@ function TaskCard({ task, onEdit, onDelete, onMove, done }: {
         <div className="flex gap-1 mt-3 md:opacity-0 md:group-hover:opacity-100 transition-all" onClick={e => e.stopPropagation()}>
           {task.status !== 'todo' && (
             <button onClick={() => onMove(task.id, task.status==='inprogress'?'todo':'inprogress')}
-              className="text-xs bg-white/5 hover:bg-white/10 px-3 py-1.5 rounded-md text-white/50 transition-all">ط±ط¬ظˆط¹ â†گ</button>
+              <button onClick={() => onMove(task.id, task.status==='inprogress'?'todo':'inprogress')}
+                className="text-xs bg-white/5 hover:bg-white/10 px-3 py-1.5 rounded-md text-white/50 transition-all">← رجوع</button>
           )}
           {task.status !== 'done' && (
-            <button onClick={() => onMove(task.id, task.status==='todo'?'inprogress':'done')}
-              className="text-xs bg-white/5 hover:bg-blue-500/20 hover:text-blue-300 px-3 py-1.5 rounded-md text-white/50 transition-all">
-              {task.status==='todo'?'â†’ ط§ط¨ط¯ط£':'â†’ ط£ظ†ظ‡ظگ'}
-            </button>
+            <button onClick={() => onMove(task.id, task.status==='todo'?'⚡ ابدأ':'✅ أكمل')}
+              className="text-xs bg-white/5 hover:bg-blue-500/20 hover:text-blue-300 px-2 py-1 rounded-md text-white/40 transition-all">⚡ ابدأ</button>
           )}
         </div>
       )}
@@ -630,7 +642,7 @@ function CalendarView({ tasks }: { tasks: Task[] }) {
   const [month, setMonth] = useState(now.getMonth())
   const daysInMonth = new Date(year, month + 1, 0).getDate()
   const firstDay = new Date(year, month, 1).getDay()
-  const monthNames = ['ظٹظ†ط§ظٹط±','ظپط¨ط±ط§ظٹط±','ظ…ط§ط±ط³','ط£ط¨ط±ظٹظ„','ظ…ط§ظٹظˆ','ظٹظˆظ†ظٹظˆ','ظٹظˆظ„ظٹظˆ','ط£ط؛ط³ط·ط³','ط³ط¨طھظ…ط¨ط±','ط£ظƒطھظˆط¨ط±','ظ†ظˆظپظ…ط¨ط±','ط¯ظٹط³ظ…ط¨ط±']
+  const monthNames = ['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر']
 
   const tasksByDay: Record<number, Task[]> = {}
   tasks.forEach(task => {
@@ -656,8 +668,8 @@ function CalendarView({ tasks }: { tasks: Task[] }) {
         <button onClick={() => { if(month===11){setMonth(0);setYear(y=>y+1)}else setMonth(m=>m+1) }}
           className="px-4 py-2 bg-white/5 hover:bg-white/10 rounded-xl text-sm transition-all">â†’</button>
       </div>
-      <div className="grid grid-cols-7 gap-1 mb-2">
-        {['ط£ط­','ط¥ط«','ط«ظ„','ط£ط±','ط®ظ…','ط¬ظ…','ط³ط¨'].map(d => (
+        {['أحد','اث','ثلا','أرب','خمس','جمعة','سبت'].map(d => (
+        {['أحد','اث','ثلا','أرب','خمس','جمعة','سبت'].map(d => (
           <div key={d} className="text-center text-xs text-white/30 py-2">{d}</div>
         ))}
       </div>
