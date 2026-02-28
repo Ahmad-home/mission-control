@@ -21,6 +21,7 @@ interface Task {
   activeNow?: boolean
   effort?: Effort
   progress?: number
+  completedAt?: string
 }
 
 const PC: Record<Priority,string> = {
@@ -63,6 +64,18 @@ function fmtDue(d?: string): { label:string; color:string }|null {
   if (diff<=7) return {label:`${diff} أيام`,color:'text-blue-400 bg-blue-500/10 border-blue-500/30'}
   const mn=['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر']
   return {label:`${new Date(d).getDate()} ${mn[new Date(d).getMonth()]}`,color:'text-white/40 bg-white/5 border-white/10'}
+}
+
+
+function fmtCompleted(d?: string): string|null {
+  if (!d) return null
+  const comp=new Date(d), now=new Date()
+  const diff=Math.round((now.getTime()-comp.getTime())/86400000)
+  if (diff===0) return 'اليوم'
+  if (diff===1) return 'أمس'
+  if (diff<=7) return `قبل ${diff} أيام`
+  const mn=['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر']
+  return `${comp.getDate()} ${mn[comp.getMonth()]}`
 }
 
 function sortT(tasks:Task[], s:SortBy) {
@@ -116,7 +129,7 @@ export default function MC() {
   const openEdit=(t:Task)=>{ setEditing(t); setForm({title:t.title,description:t.description,plan:t.plan||'',notes:t.notes||'',assignee:t.assignee,priority:t.priority,status:t.status,tags:t.tags.join(', '),dueDate:t.dueDate||'',effort:t.effort||'medium',progress:t.progress||0}); setShowForm(true) }
   const submit=()=>{ if (!form.title.trim()) return; const tl=form.tags.split(',').map((x:string)=>x.trim()).filter(Boolean); if (editing) { save(tasks.map(t=>t.id===editing.id?{...t,...form,tags:tl,dueDate:form.dueDate||undefined,plan:form.plan||undefined,notes:form.notes||undefined,effort:form.effort,progress:form.progress}:t)) } else { save([...tasks,{id:genId(),title:form.title,description:form.description,plan:form.plan||undefined,notes:form.notes||undefined,assignee:form.assignee,priority:form.priority,status:form.status,tags:tl,createdAt:new Date().toISOString(),dueDate:form.dueDate||undefined,effort:form.effort,progress:form.progress}]) }; setShowForm(false) }
   const del=(id:string)=>save(tasks.filter(t=>t.id!==id))
-  const move=(id:string,s:Status)=>save(tasks.map(t=>t.id===id?{...t,status:s,progress:s==='done'?100:t.progress}:t))
+  const move=(id:string,s:Status)=>save(tasks.map(t=>t.id===id?{...t,status:s,progress:s==='done'?100:t.progress,completedAt:s==='done'?new Date().toISOString():t.completedAt}:t))
   const setActive=(id:string,active:boolean)=>save(tasks.map(t=>t.id===id?{...t,activeNow:active}:t))
   const setProgress=(id:string,p:number)=>save(tasks.map(t=>t.id===id?{...t,progress:p}:t))
   const apf=(list:Task[])=>{ let r=proj==='all'?list:list.filter(t=>matchP(t,proj)); if (fA!=='all') r=r.filter(t=>t.assignee===fA); if (fP!=='all') r=r.filter(t=>t.priority===fP); return r }
@@ -125,7 +138,7 @@ export default function MC() {
   const handleDragEnd = (event: DragEndEvent) => { setDraggedTask(null); const { active, over } = event; if (!over) return; const overId = over.id as string; if (overId === 'col-todo' || overId === 'col-inprogress' || overId === 'col-done') { const newStatus = overId.replace('col-', '') as Status; if (tasks.find(t => t.id === active.id)?.status !== newStatus) { move(active.id as string, newStatus) } } }
 
   const capacity = calcCapacity(tasks)
-  const act=apf(tasks.filter(t=>t.status!=='done')), done=apf(tasks.filter(t=>t.status==='done'))
+  const act=apf(tasks.filter(t=>t.status!=='done')), done=apf(tasks.filter(t=>t.status==='done')).sort((a,b)=>(new Date(b.completedAt||0).getTime())-(new Date(a.completedAt||0).getTime()))
   const ipT=sortT(act.filter(t=>t.status==='inprogress'),sort), urgT=sortT(act.filter(t=>t.priority==='high'&&t.status==='todo'),sort)
   const pendT=sortT(act.filter(t=>t.status==='todo'&&t.priority!=='high'),sort), todoT=sortT(apf(tasks.filter(t=>t.status==='todo')),sort)
   return (
@@ -280,7 +293,7 @@ function DroppableCol({id,title,icon,top,n,add,children}:{id:string;title:string
 function E({msg}:{msg:string}) { return <p className="text-xs text-white/20 text-center py-6">{msg}</p> }
 
 function TC({task,onEdit,onDel,onMove,onSetActive,onSetProgress,isDone,isDragging}:{task:Task;onEdit:(t:Task)=>void;onDel:(id:string)=>void;onMove:(id:string,s:Status)=>void;onSetActive:(id:string,active:boolean)=>void;onSetProgress:(id:string,p:number)=>void;isDone?:boolean;isDragging?:boolean}) {
-  const due=fmtDue(task.dueDate), ov=due?.label.includes('تأخّر')
+  const due=fmtDue(task.dueDate), ov=due?.label.includes('تأخّر'), completed=fmtCompleted(task.completedAt)
   const activeClass = task.activeNow ? 'ring-2 ring-violet-500 animate-pulse' : ''
   const hasProgress = task.effort && task.effort !== 'light' && task.status === 'inprogress'
   return (
@@ -293,6 +306,7 @@ function TC({task,onEdit,onDel,onMove,onSetActive,onSetProgress,isDone,isDraggin
         {task.effort && (<span className={`text-[9px] px-1.5 py-0.5 rounded-full border ${EC[task.effort]}`}>{EL[task.effort]}</span>)}
         <span className={task.assignee==='Ahmad'?'text-[10px] bg-amber-500/15 text-amber-400 border border-amber-500/25 px-2 py-0.5 rounded-full':'text-[10px] bg-violet-500/15 text-violet-400 border border-violet-500/25 px-2 py-0.5 rounded-full'}>{task.assignee==='Ahmad'?'👨':'💜'}</span>
         {due&&<span className={`text-[9px] px-1.5 py-0.5 rounded-full border ${due.color}`}>{due.label}</span>}
+        {isDone&&completed&&<span className="text-[9px] px-1.5 py-0.5 rounded-full border text-emerald-400 bg-emerald-500/10 border-emerald-500/30">✓ {completed}</span>}
       </div>
       {task.tags.length>0 && !isDone && (<div className="flex gap-1 flex-wrap mb-2">{task.tags.slice(0,3).map(t=><span key={t} className="text-[9px] bg-white/[0.04] text-white/30 px-1.5 py-0.5 rounded-full">{t}</span>)}{task.tags.length>3 && <span className="text-[9px] text-white/20">+{task.tags.length-3}</span>}</div>)}
       {!isDone&&(<div className="flex gap-1.5 mt-2" onClick={e=>e.stopPropagation()}>{task.status!=='todo'&&(<button onClick={()=>onMove(task.id,task.status==='inprogress'?'todo':'inprogress')} className="text-[10px] bg-white/[0.04] hover:bg-white/10 px-2.5 py-1 rounded-lg text-white/35 transition-all">← رجوع</button>)}{task.status!=='done'&&(<button onClick={()=>onMove(task.id,task.status==='todo'?'inprogress':'done')} className="text-[10px] bg-white/[0.04] hover:bg-blue-500/20 hover:text-blue-300 px-2.5 py-1 rounded-lg text-white/35 transition-all">{task.status==='todo'?'⚡ ابدأ':'✅ أكمل'}</button>)}{task.status==='inprogress'&&!task.activeNow&&task.assignee==='Dana'&&(<button onClick={()=>onSetActive(task.id,true)} className="text-[10px] bg-violet-500/10 hover:bg-violet-500/20 text-violet-400 px-2.5 py-1 rounded-lg transition-all">🔥 شغالة</button>)}{task.activeNow&&(<button onClick={()=>onSetActive(task.id,false)} className="text-[10px] bg-white/[0.04] hover:bg-white/10 px-2.5 py-1 rounded-lg text-white/35 transition-all">إيقاف</button>)}</div>)}
